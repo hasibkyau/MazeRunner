@@ -2,26 +2,30 @@
 #include <Wire.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
-#include <HCSR04.h> // sonar Library
 // For two motors instance at once
 #include <L298N.h>
+
+#include <NewPing.h>
+
+#define SONAR_NUM 3      // Number of sensors.
+#define MAX_DISTANCE 300 // Maximum distance (in cm) to ping.
 
 
 // Initialize OLED display (128x64 pixels) using I2C communication.
 Adafruit_SSD1306 display(128, 64, &Wire, -1);
 
-
-HCSR04 hc(5, new int[3]{2, 12, 35}, 3); //initialisation class HCSR04 (trig pin , echo pin, number of sensor)
-//front = 2, left = 12, right = 35
-
-
+NewPing sonar[SONAR_NUM] = {   // Sensor object array.
+  NewPing(2, 15, MAX_DISTANCE), // Each sensor's trigger pin, echo pin, and max distance to ping.
+  NewPing(18, 19, MAX_DISTANCE),
+  NewPing(5, 4, MAX_DISTANCE)
+};
 // Left Motor connections
 int enL = 25, in1 = 26, in2 = 27;
 // Right Motor connections
-int enR = 17, in3 = 18, in4 = 19;
+int enR = 13, in3 = 12, in4 = 14;
 
 L298N LeftMotor(enL, in1, in2);
-L298N RightMotor(enR, in1, in2);
+L298N RightMotor(enR, in3, in4);
 
 /*
 Print some informations in Serial Monitor
@@ -40,8 +44,8 @@ void displaySetup(){
 
     display.setTextColor(WHITE);
     // Set initial speed
-    LeftMotor.setSpeed(70);
-    RightMotor.setSpeed(70);
+    LeftMotor.setSpeed(100);
+    RightMotor.setSpeed(100);
 }
 
 
@@ -49,7 +53,47 @@ void setup(){
     Serial.begin(115200); // Initialize the serial communication for debugging
     displaySetup(); // Initialize the OLED display
     // Set all the motor control pins to outputs
-	pinMode(enL, OUTPUT);
+    pinSetup();
+}
+
+// Function to display text on the OLED screen at a specific position and size
+void displayText(int x, int y, int textSize, const char *displayText){
+
+}
+
+
+int block = 10;
+int front, left, right;
+bool F=true, L=false, R=false;
+
+void loop(){
+
+    front = sonar[0].ping_cm();  // Measure front distance
+    left =  sonar[1].ping_cm();  // Measure left distance
+    right = sonar[2].ping_cm(); // Measure right distance
+
+    DisplayStatus();
+    
+    if(right>10){
+        F=false, L=false, R=true;
+        goRight();
+    }
+    else if(front>10){
+        F=true, L=false, R=false;
+        goForward();
+    }
+    else if(left>10){
+        F=false, L=true, R=false;
+        goLeft();
+    }
+    else{
+        F=false, L=true, R=false;
+        uTurn();
+    }
+}
+
+void pinSetup(){
+  pinMode(enL, OUTPUT);
 	pinMode(enR, OUTPUT);
 	pinMode(in1, OUTPUT);
 	pinMode(in2, OUTPUT);
@@ -61,41 +105,6 @@ void setup(){
 	digitalWrite(in2, LOW);
 	digitalWrite(in3, LOW);
 	digitalWrite(in4, LOW);
-}
-
-// Function to display text on the OLED screen at a specific position and size
-void displayText(int x, int y, int textSize, const char *displayText){
-
-}
-
-
-int block = 10;
-int front, left, right;
-
-void loop(){
-    //int front = measureDistance(15, 2);   // Measure front distance
-    //int left = measureDistance(13, 12);  // Measure left distance
-    //int right = measureDistance(32, 35); // Measure right distance
-
-
-    front = hc.dist(0);   // Measure front distance
-    left = hc.dist(1);  // Measure left distance
-    right = hc.dist(2); // Measure right distance
-
-    DisplayStatus();
-    
-    if(right>10){
-        goRight();
-    }
-    else if(front>10){
-        goForward();
-    }
-    else if(left>10){
-        goLeft();
-    }
-    else{
-        uTurn();
-    }
 }
 
 void goForward(){
@@ -113,6 +122,8 @@ void goLeft(){
     LeftMotor.forward();
     
     printSomeInfo();
+
+    
 }
 
 
@@ -143,17 +154,27 @@ void DisplayStatus(){
     display.setTextSize(1);
     
     display.setCursor(0, 0);
-    display.print("Front: ");
-    display.println(front);
+    display.print("F:");
+    display.print(front);
 
+    display.setCursor(42, 0);
+    display.print("L:");
+    display.print(left);
+
+    display.setCursor(84, 0);
+    display.print("R:");
+    display.print(right);
+    
     display.setCursor(0, 10);
-    display.print("Left: ");
-    display.println(left);
-
-    display.setCursor(0, 20);
-    display.print("Right: ");
-    display.println(right);
+    if(F)display.print("Go Forward");
+    else if(R)display.print("Go Right");
+    else if(L)display.print("Go Left");
+    else{
+        display.print("U Turn");
+    }
     display.display();
+
+
     
     Serial.print("Front:");
     Serial.println(front);
