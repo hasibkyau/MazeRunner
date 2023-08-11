@@ -7,46 +7,29 @@
 
 #include <NewPing.h>
 
+#define BLOCK 20
+#define SPEED 100
+
 #define SONAR_NUM 3      // Number of sensors.
-#define MAX_DISTANCE 300 // Maximum distance (in cm) to ping.
+#define MAX_DISTANCE 400 // Maximum distance (in cm) to ping.
 
 
 // Initialize OLED display (128x64 pixels) using I2C communication.
 Adafruit_SSD1306 display(128, 64, &Wire, -1);
 
 NewPing sonar[SONAR_NUM] = {   // Sensor object array.
-  NewPing(2, 15, MAX_DISTANCE), // Each sensor's trigger pin, echo pin, and max distance to ping.
-  NewPing(18, 19, MAX_DISTANCE),
-  NewPing(5, 4, MAX_DISTANCE)
+  NewPing(15, 4, MAX_DISTANCE), // Each sensor's trigger pin, echo pin, and max distance to ping.
+  NewPing(19, 23, MAX_DISTANCE),
+  NewPing(5, 18, MAX_DISTANCE)
+  
 };
 // Left Motor connections
-int enL = 25, in1 = 26, in2 = 27;
+int enR = 25, in1 = 26, in2 = 27;
 // Right Motor connections
-int enR = 13, in3 = 12, in4 = 14;
+int enL = 13, in3 = 12, in4 = 14;
 
 L298N LeftMotor(enL, in1, in2);
 L298N RightMotor(enR, in3, in4);
-
-/*
-Print some informations in Serial Monitor
-*/
-void printSomeInfo()
-{
-  Serial.print("Motor is moving = ");
-  Serial.print(LeftMotor.isMoving());
-  Serial.print(" at speed = ");
-  Serial.println(LeftMotor.getSpeed());
-}
-
-// Function to initialize the OLED display
-void displaySetup(){
-    display.begin(SSD1306_SWITCHCAPVCC, 0x3C); // initialize with the I2C addr 0x3C (for the 128x32)
-
-    display.setTextColor(WHITE);
-    // Set initial speed
-    LeftMotor.setSpeed(100);
-    RightMotor.setSpeed(100);
-}
 
 
 void setup(){
@@ -54,6 +37,9 @@ void setup(){
     displaySetup(); // Initialize the OLED display
     // Set all the motor control pins to outputs
     pinSetup();
+        // Set initial speed
+    LeftMotor.setSpeed(SPEED);
+    RightMotor.setSpeed(SPEED);
 }
 
 // Function to display text on the OLED screen at a specific position and size
@@ -61,33 +47,34 @@ void displayText(int x, int y, int textSize, const char *displayText){
 
 }
 
-
-int block = 10;
 int front, left, right;
+int LeftBlock = 30, RightBlock = 30, FrontBlock =5, Balanced=5, UBlock=20;
 bool F=true, L=false, R=false;
-
-void loop(){
-
+void readSonar(){
     front = sonar[0].ping_cm();  // Measure front distance
     left =  sonar[1].ping_cm();  // Measure left distance
     right = sonar[2].ping_cm(); // Measure right distance
+}
 
+void loop(){
+
+    readSonar();
     DisplayStatus();
-    
-    if(right>10){
-        F=false, L=false, R=true;
-        goRight();
-    }
-    else if(front>10){
+
+    if(right<30 && left<30 && front>10){
         F=true, L=false, R=false;
         goForward();
     }
-    else if(left>10){
+    else if(right>30){
+        F=false, L=false, R=true;
+        goRight();
+    }
+    else if(left>30){
         F=false, L=true, R=false;
         goLeft();
     }
-    else{
-        F=false, L=true, R=false;
+    else if(front<10 && left<30 && right<30){
+        F=false, L=false, R=false;
         uTurn();
     }
 }
@@ -110,19 +97,52 @@ void pinSetup(){
 void goForward(){
     RightMotor.forward();
     LeftMotor.forward();
-    printSomeInfo();
 
+    int diff = abs(left - right);
+
+    if(right<=2){
+      LeftMotor.setSpeed(0);
+      RightMotor.setSpeed(SPEED-20);
+    }
+    else if(left<=2){
+      LeftMotor.setSpeed(SPEED-20);
+      RightMotor.setSpeed(0);
+    }
+    else if(left<5){
+        LeftMotor.setSpeed(SPEED);
+        RightMotor.setSpeed(SPEED-25);
+      }
+    else if(right<5){
+        LeftMotor.setSpeed(SPEED-25);
+        RightMotor.setSpeed(SPEED);
+    }
+    else{
+      LeftMotor.setSpeed(SPEED);
+      RightMotor.setSpeed(SPEED);
+    }
 }
 
 void goLeft(){
+    
     RightMotor.stop();
     LeftMotor.stop();
 
-    RightMotor.backward();
-    LeftMotor.forward();
-    
-    printSomeInfo();
+    LeftMotor.setSpeed(SPEED-10);
+    RightMotor.setSpeed(SPEED-10);
 
+    RightMotor.forward();
+    LeftMotor.backward();
+    delay(1000);
+    RightMotor.forward();
+    LeftMotor.forward();
+    delay(1000);
+
+    // while(front<20){
+    //   readSonar();
+    //   RightMotor.forward();
+    //   LeftMotor.backward();
+    //   printSomeInfo();
+    // }
     
 }
 
@@ -130,11 +150,24 @@ void goLeft(){
 void goRight(){
     RightMotor.stop();
     LeftMotor.stop();
+    delay(500);
 
-    RightMotor.forward();
-    LeftMotor.backward();
+    LeftMotor.setSpeed(SPEED-10);
+    RightMotor.setSpeed(SPEED-10);
     
-    printSomeInfo();
+    while(front<BLOCK){
+    readSonar();
+    RightMotor.backward();
+    LeftMotor.forward();
+    }
+  
+
+    // while(front<20){
+    //   readSonar();
+    // RightMotor.backward();
+    // LeftMotor.forward();
+    //   printSomeInfo();
+    // }
     
 }
 
@@ -142,11 +175,35 @@ void goRight(){
 void uTurn(){
     RightMotor.stop();
     LeftMotor.stop();
+    delay(500);
+
+    LeftMotor.setSpeed(SPEED-10);
+    RightMotor.setSpeed(SPEED-10);
+    if(right>left){
+      RightMotor.forward();
+      LeftMotor.backward();
+    }
+    else if(left>right){
+      RightMotor.backward();
+      LeftMotor.forward();
+    }
+
+    while(front < UBlock ){
+      readSonar();
+      DisplayStatus();
+      printSomeInfo();
+    }
+
+    RightMotor.stop();
+    LeftMotor.stop();
+    delay(500);
 
     RightMotor.forward();
-    LeftMotor.backward();
+    LeftMotor.forward();
+
+    LeftMotor.setSpeed(SPEED);
+    RightMotor.setSpeed(SPEED);    
     
-    printSomeInfo();
 }
 
 void DisplayStatus(){
@@ -184,6 +241,25 @@ void DisplayStatus(){
     Serial.println(right);
     Serial.println(" ");
 }
+
+/*
+Print some informations in Serial Monitor
+*/
+void printSomeInfo()
+{
+  Serial.print("Motor is moving = ");
+  Serial.print(LeftMotor.isMoving());
+  Serial.print(" at speed = ");
+  Serial.println(LeftMotor.getSpeed());
+}
+
+// Function to initialize the OLED display
+void displaySetup(){
+    display.begin(SSD1306_SWITCHCAPVCC, 0x3C); // initialize with the I2C addr 0x3C (for the 128x32)
+
+    display.setTextColor(WHITE);
+}
+
 
 void Intro(){
 
