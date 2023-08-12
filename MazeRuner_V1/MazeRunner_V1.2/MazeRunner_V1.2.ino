@@ -62,25 +62,35 @@ void loop() {
   readSonar();
   DisplayStatus();
 
-  if (right < 20 && left < 20 && front > 10) {
+
+  if (right >= 20) {
+    F = false, L = false, R = true;
+    //goRight();
+    if(front>=20){
+      GO(10);
+    }
+    else{
+      GO(5);
+    }
+    STOP(500);
+    Right90();
+    STOP(300);
+    GO(10);
+  }
+
+  
+  else if (front >= 20) {
     F = true, L = false, R = false;
     goForward();
   }
 
-  else if (right > 20) {
-    F = false, L = false, R = true;
-    //goRight();
-    GO(10);
-    STOP(500);
-    Right90();
-    STOP(500);
-    GO(10);
-  }
-
-  else if (left>20 && right<20 && front<10) {
+  else if (left>=20) {
     F = false, L = true, R = false;
     if(front>20){
       GO(10);
+    }
+    else{
+      GO(5);
     }
     STOP(500);
     Left90();
@@ -88,7 +98,7 @@ void loop() {
     GO(10);
     }
 
-  else if (front<10 && left<20 && right<20) {
+  else{
     F = false, L = false, R = false;
     uTurn();
   }
@@ -147,22 +157,21 @@ void goForward() {
 
  // else{
     if(right<=3){
+      RightMotor.setSpeed(SPEED+30);
+      LeftMotor.setSpeed(SPEED-10);
+    }else if(right>3 && right<=4){
       RightMotor.setSpeed(SPEED+20);
       LeftMotor.setSpeed(SPEED-10);
-    }else if(right<5){
-      RightMotor.setSpeed(SPEED+20);
-      LeftMotor.setSpeed(SPEED);
-    }else if(right>=8){
-      RightMotor.setSpeed(SPEED-10);
-      LeftMotor.setSpeed(SPEED+20);  
-    }else if(right>=7){
-      RightMotor.setSpeed(SPEED-10);
-      LeftMotor.setSpeed(SPEED);  
-    }else if(right>=5){
+    }else if(right>=5 && right<=7){
       RightMotor.setSpeed(SPEED);
       LeftMotor.setSpeed(SPEED);  
-    }
-    else{
+    }else if(right>7 && right<=10){
+      RightMotor.setSpeed(SPEED-10);
+      LeftMotor.setSpeed(SPEED+20);  
+    }else if(right>10){
+      RightMotor.setSpeed(SPEED-10);
+      LeftMotor.setSpeed(SPEED+30);  
+    }else{
       LeftMotor.setSpeed(SPEED);
       RightMotor.setSpeed(SPEED);
     }
@@ -236,11 +245,11 @@ void uTurn() {
   RightMotor.setSpeed(SPEED - 10);
 
   if (right > left) {
-    RightMotor.forward();
-    LeftMotor.backward();
-  } else if (left > right) {
     RightMotor.backward();
     LeftMotor.forward();
+  } else if (left > right) {
+    RightMotor.forward();
+    LeftMotor.backward();
   }
 
   while (front < 20) {
@@ -333,7 +342,7 @@ void GO(int s){
 void Right90(){
   LeftMotor.forward();
   RightMotor.backward();
-  RightMotor.setSpeed(SPEED);
+  RightMotor.setSpeed(SPEED+10);
   LeftMotor.setSpeed(SPEED);
   while(front<20){
     readSonar();
@@ -345,7 +354,7 @@ void Right90(){
 void Left90(){
   LeftMotor.backward();
   RightMotor.forward();
-  RightMotor.setSpeed(SPEED);
+  RightMotor.setSpeed(SPEED+10);
   LeftMotor.setSpeed(SPEED);
   while(front<20){
     readSonar();
