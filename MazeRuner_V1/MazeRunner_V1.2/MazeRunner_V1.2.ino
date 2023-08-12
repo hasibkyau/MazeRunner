@@ -8,7 +8,7 @@
 #include <NewPing.h>
 
 #define BLOCK 20
-#define SPEED 80
+#define SPEED 90
 
 #define SONAR_NUM 3       // Number of sensors.
 #define MAX_DISTANCE 400  // Maximum distance (in cm) to ping.
@@ -70,13 +70,22 @@ void loop() {
   else if (right > 20) {
     F = false, L = false, R = true;
     //goRight();
+    GO(10);
+    STOP(500);
     Right90();
+    STOP(500);
     GO(10);
   }
 
   else if (left>20 && right<20 && front<10) {
     F = false, L = true, R = false;
-    goLeft();
+    if(front>20){
+      GO(10);
+    }
+    STOP(500);
+    Left90();
+    STOP(500);
+    GO(10);
     }
 
   else if (front<10 && left<20 && right<20) {
@@ -137,11 +146,20 @@ void goForward() {
   // }
 
  // else{
-    if(right<=4){
-      RightMotor.setSpeed(SPEED);
+    if(right<=3){
+      RightMotor.setSpeed(SPEED+20);
       LeftMotor.setSpeed(SPEED-10);
+    }else if(right<5){
+      RightMotor.setSpeed(SPEED+20);
+      LeftMotor.setSpeed(SPEED);
+    }else if(right>=8){
+      RightMotor.setSpeed(SPEED-10);
+      LeftMotor.setSpeed(SPEED+20);  
     }else if(right>=7){
-      RightMotor.setSpeed(SPEED-20);
+      RightMotor.setSpeed(SPEED-10);
+      LeftMotor.setSpeed(SPEED);  
+    }else if(right>=5){
+      RightMotor.setSpeed(SPEED);
       LeftMotor.setSpeed(SPEED);  
     }
     else{
@@ -164,8 +182,10 @@ void goLeft() {
     // RightMotor.setSpeed(SPEED);
     // delay(300);
 
-    LeftMotor.stop();
+
+    LeftMotor.backward();
     RightMotor.forward();
+    RightMotor.setSpeed(SPEED);
     LeftMotor.setSpeed(SPEED);
     while(front<20){
             readSonar();
@@ -298,12 +318,15 @@ void Intro() {
 }
 
 void GO(int s){
+  RightMotor.setSpeed(SPEED);
+  LeftMotor.setSpeed(SPEED);
+  RightMotor.forward();
+  LeftMotor.forward();
   int s1 = front;
   int destination=s1-s;
   while(front>destination){
     readSonar();
     DisplayStatus();
-    goForward();
   }
 }
 
@@ -329,4 +352,10 @@ void Left90(){
     DisplayStatus();
   }
   RightMotor.forward();
+}
+
+void STOP(int t){
+  RightMotor.stop();
+  LeftMotor.stop();
+  delay(t);
 }
