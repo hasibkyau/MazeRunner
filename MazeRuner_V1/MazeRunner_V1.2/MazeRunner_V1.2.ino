@@ -107,29 +107,29 @@ void goForward() {
   LeftMotor.forward();
 
   //#Method 1: Robot will follow only the right wall
-  if(right<=3){
-    RightMotor.setSpeed(SPEED);
-    LeftMotor.setSpeed(40);
-  }else if(right>=5){
-    RightMotor.setSpeed(40);
-    LeftMotor.setSpeed(SPEED);    
-  }
-  else{
-    RightMotor.setSpeed(SPEED+10);
-    LeftMotor.setSpeed(SPEED+10);   
-  }
+  // if(right<=3){
+  //   RightMotor.setSpeed(SPEED);
+  //   LeftMotor.setSpeed(40);
+  // }else if(right>=5){
+  //   RightMotor.setSpeed(40);
+  //   LeftMotor.setSpeed(SPEED);    
+  // }
+  // else{
+  //   RightMotor.setSpeed(SPEED+10);
+  //   LeftMotor.setSpeed(SPEED+10);   
+  // }
 
   //# Method 2: Robot will take decision from both left and right wall distance
-  // if(left<=3){
-  //   RightMotor.setSpeed(0);
-  //   LeftMotor.setSpeed(SPEED-20);
-  // }else if(right<=3){
-  //   RightMotor.setSpeed(SPEED-20);
-  //   LeftMotor.setSpeed(0);    
-  // }else{
-  //   LeftMotor.setSpeed(SPEED+right);
-  //   RightMotor.setSpeed(SPEED+left);
-  // }
+  if(left<=2){
+    RightMotor.stop();
+    LeftMotor.setSpeed(SPEED);
+  }else if(right<=2){
+    RightMotor.setSpeed(SPEED);
+    LeftMotor.stop();    
+  }else{
+    LeftMotor.setSpeed(SPEED);
+    RightMotor.setSpeed(SPEED);
+  }
 }
 
 void goLeft() {
@@ -137,10 +137,14 @@ void goLeft() {
     // RightMotor.setSpeed(SPEED);
     // delay(300);
 
-    LeftMotor.backward();
+    LeftMotor.stop();
     RightMotor.forward();
     LeftMotor.setSpeed(SPEED);
-    RightMotor.setSpeed(SPEED-40);
+    while(front<25){
+            readSonar();
+            DisplayStatus();
+    }
+    LeftMotor.forward();
 }
 
 
@@ -150,9 +154,9 @@ void goRight() {
     // delay(400);
 
     LeftMotor.forward();
-    RightMotor.backward();
-    LeftMotor.setSpeed(SPEED-40);
-    RightMotor.setSpeed(SPEED);
+    RightMotor.stop();
+    LeftMotor.setSpeed(SPEED);
+    //RightMotor.setSpeed(SPEED);
     
     if(front<25){ 
         while(front<25){
@@ -169,6 +173,8 @@ void goRight() {
         }
 
     }
+    RightMotor.forward();
+
   
 }
 
