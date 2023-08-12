@@ -24,9 +24,11 @@ NewPing sonar[SONAR_NUM] = {     // Sensor object array.
 
 };
 // Left Motor connections
-int enR = 25, in1 = 26, in2 = 27;
+int enL = 13, in1 = 12, in2 = 14;
+
 // Right Motor connections
-int enL = 13, in3 = 12, in4 = 14;
+int enR = 25, in3 = 27, in4 = 26;
+
 
 L298N LeftMotor(enL, in1, in2);
 L298N RightMotor(enR, in3, in4);
@@ -122,49 +124,17 @@ void goForward() {
   RightMotor.forward();
   LeftMotor.forward();
 
-  int diff = abs(left - right);
-  if (right <= 3) {
-    LeftMotor.setSpeed(0);
-    RightMotor.setSpeed(SPEED - 20);
-  } else if (left <= 3) {
-    LeftMotor.setSpeed(SPEED - 20);
-    RightMotor.setSpeed(0);
+  if(left<=3){
+    rightMotor.setSpeed(0);
+    leftMotor.setSpeed(SPEED-20);
+  }else if(right<=3){
+    rightMotor.setSpeed(SPEED-20);
+    leftMotor.setSpeed(0);    
+  }else{
+    LeftMotor.setSpeed(SPEED+right);
+    RightMotor.setSpeed(SPEED+left);
   }
 
-  else if (right <= 4) {
-    LeftMotor.setSpeed(55);
-    RightMotor.setSpeed(SPEED);
-  } else if (left <= 4) {
-    LeftMotor.setSpeed(SPEED);
-    RightMotor.setSpeed(55);
-  }
-
-  else if(diff>=2 && diff<=4){
-    if(left>right){
-      LeftMotor.setSpeed(SPEED);
-      RightMotor.setSpeed(SPEED - 25);
-    }
-    else{
-      LeftMotor.setSpeed(SPEED-25);
-      RightMotor.setSpeed(SPEED);
-    }
-  }
-
-  else if(diff>4){
-    if(left>right){
-      LeftMotor.setSpeed(SPEED);
-      RightMotor.setSpeed(SPEED - left);
-    }
-    else{
-      LeftMotor.setSpeed(SPEED-right);
-      RightMotor.setSpeed(SPEED);
-    }
-  } 
-  else {
-    LeftMotor.setSpeed(SPEED);
-    RightMotor.setSpeed(SPEED);
-  }
-  
   // if (right <= 2) {
   //   LeftMotor.setSpeed(0);
   //   RightMotor.setSpeed(SPEED - 20);
