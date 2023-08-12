@@ -67,17 +67,17 @@ void loop() {
     goForward();
   }
 
-  else if (right > 25) {
+  else if (right > 20) {
     F = false, L = false, R = true;
     goRight();
   }
 
-  else if (left>25 && right<25 && front<10) {
+  else if (left>20 && right<20 && front<10) {
     F = false, L = true, R = false;
     goLeft();
     }
 
-  else if (front<10 && left<30 && right<30) {
+  else if (front<10 && left<20 && right<20) {
     F = false, L = false, R = false;
     uTurn();
   }
@@ -120,13 +120,21 @@ void goForward() {
   // }
 
   //# Method 2: Robot will take decision from both left and right wall distance
-  if(left<=2){
-    RightMotor.stop();
-    LeftMotor.setSpeed(SPEED);
-  }else if(right<=2){
-    RightMotor.setSpeed(SPEED);
-    LeftMotor.stop();    
-  }else{
+  if(left<=3){
+    RightMotor.setSpeed(SPEED-20);
+    LeftMotor.setSpeed(SPEED+20);
+  }else if(right<=3){
+    RightMotor.setSpeed(SPEED+20);
+    LeftMotor.setSpeed(SPEED-20);  
+  }
+  // else if(left<=5){
+  //   RightMotor.setSpeed(SPEED-20);
+  //   LeftMotor.setSpeed(SPEED+20);
+  // }else if(right<=5){
+  //   RightMotor.setSpeed(SPEED+20);
+  //   LeftMotor.setSpeed(SPEED-20);    
+  // }
+  else{
     LeftMotor.setSpeed(SPEED);
     RightMotor.setSpeed(SPEED);
   }
@@ -140,7 +148,7 @@ void goLeft() {
     LeftMotor.stop();
     RightMotor.forward();
     LeftMotor.setSpeed(SPEED);
-    while(front<25){
+    while(front<20){
             readSonar();
             DisplayStatus();
     }
@@ -158,8 +166,8 @@ void goRight() {
     LeftMotor.setSpeed(SPEED);
     //RightMotor.setSpeed(SPEED);
     
-    if(front<25){ 
-        while(front<25){
+    if(front<20){ 
+        while(front<15){
             readSonar();
             DisplayStatus();
         } 
@@ -167,7 +175,7 @@ void goRight() {
 
     else{     
     
-        while(left<25){
+        while(left<15){
           readSonar();
           DisplayStatus();
         }
