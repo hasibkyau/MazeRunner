@@ -106,34 +106,53 @@ void goForward() {
   RightMotor.forward();
   LeftMotor.forward();
 
-  if(left<=3){
-    RightMotor.setSpeed(0);
-    LeftMotor.setSpeed(SPEED-20);
-  }else if(right<=3){
-    RightMotor.setSpeed(SPEED-20);
-    LeftMotor.setSpeed(0);    
-  }else{
-    LeftMotor.setSpeed(SPEED+right);
-    RightMotor.setSpeed(SPEED+left);
+  //#Method 1: Robot will follow only the right wall
+  if(right<=3){
+    RightMotor.setSpeed(SPEED);
+    LeftMotor.setSpeed(40);
+  }else if(right>=5){
+    RightMotor.setSpeed(40);
+    LeftMotor.setSpeed(SPEED);    
   }
+  else{
+    RightMotor.setSpeed(SPEED+10);
+    LeftMotor.setSpeed(SPEED+10);   
+  }
+
+  //# Method 2: Robot will take decision from both left and right wall distance
+  // if(left<=3){
+  //   RightMotor.setSpeed(0);
+  //   LeftMotor.setSpeed(SPEED-20);
+  // }else if(right<=3){
+  //   RightMotor.setSpeed(SPEED-20);
+  //   LeftMotor.setSpeed(0);    
+  // }else{
+  //   LeftMotor.setSpeed(SPEED+right);
+  //   RightMotor.setSpeed(SPEED+left);
+  // }
 }
 
 void goLeft() {
-    LeftMotor.setSpeed(0);
-    RightMotor.setSpeed(SPEED);
+    // LeftMotor.setSpeed(SPEED);
+    // RightMotor.setSpeed(SPEED);
+    // delay(300);
+
+    LeftMotor.backward();
+    RightMotor.forward();
+    LeftMotor.setSpeed(SPEED);
+    RightMotor.setSpeed(SPEED-40);
 }
 
 
 void goRight() {
-    
-    LeftMotor.setSpeed(SPEED);
-    RightMotor.setSpeed(SPEED);
-    delay(200);
+    //   LeftMotor.setSpeed(SPEED);
+    // RightMotor.setSpeed(SPEED);
+    // delay(400);
 
     LeftMotor.forward();
     RightMotor.backward();
-    LeftMotor.setSpeed(SPEED-10);
-    RightMotor.setSpeed(SPEED-10);
+    LeftMotor.setSpeed(SPEED-40);
+    RightMotor.setSpeed(SPEED);
     
     if(front<25){ 
         while(front<25){
