@@ -125,11 +125,11 @@ void goForward() {
   LeftMotor.forward();
 
   if(left<=3){
-    rightMotor.setSpeed(0);
-    leftMotor.setSpeed(SPEED-20);
+    RightMotor.setSpeed(0);
+    LeftMotor.setSpeed(SPEED-20);
   }else if(right<=3){
-    rightMotor.setSpeed(SPEED-20);
-    leftMotor.setSpeed(0);    
+    RightMotor.setSpeed(SPEED-20);
+    LeftMotor.setSpeed(0);    
   }else{
     LeftMotor.setSpeed(SPEED+right);
     RightMotor.setSpeed(SPEED+left);
