@@ -70,40 +70,22 @@ void loop() {
   else if (right > 25) {
     F = false, L = false, R = true;
     goRight();
-
-    if (front < 20) {
-      while (front < 20) {
-        readSonar();
-        DisplayStatus();
-      }
-    } 
-
-    else {
-      while (left < 20) {
-        readSonar();
-        DisplayStatus();
-      }
-    }
-    //goForward();
   }
-
 
   else if (left>25 && right<25 && front<10) {
     F = false, L = true, R = false;
     goLeft();
-    while (front < 20) {
-      readSonar();
-      DisplayStatus();
     }
-    goForward();
-  }
-
 
   else if (front<10 && left<30 && right<30) {
     F = false, L = false, R = false;
     uTurn();
   }
+
+
 }
+
+
 
 void pinSetup() {
   pinMode(enL, OUTPUT);
@@ -134,34 +116,41 @@ void goForward() {
     LeftMotor.setSpeed(SPEED+right);
     RightMotor.setSpeed(SPEED+left);
   }
-
-  // if (right <= 2) {
-  //   LeftMotor.setSpeed(0);
-  //   RightMotor.setSpeed(SPEED - 20);
-  // } else if (left <= 2) {
-  //   LeftMotor.setSpeed(SPEED - 20);
-  //   RightMotor.setSpeed(0);
-  // } else if (left < 5) {
-  //   LeftMotor.setSpeed(SPEED);
-  //   RightMotor.setSpeed(SPEED - 25);
-  // } else if (right < 5) {
-  //   LeftMotor.setSpeed(SPEED - 25);
-  //   RightMotor.setSpeed(SPEED);
-  // } else {
-  //   LeftMotor.setSpeed(SPEED);
-  //   RightMotor.setSpeed(SPEED);
-  // }
 }
 
 void goLeft() {
-    LeftMotor.setSpeed(SPEED - 20);
-    RightMotor.setSpeed(0);
+    LeftMotor.setSpeed(0);
+    RightMotor.setSpeed(SPEED);
 }
 
 
 void goRight() {
-    LeftMotor.setSpeed(0);
-    RightMotor.setSpeed(SPEED - 20);
+    
+    LeftMotor.setSpeed(SPEED);
+    RightMotor.setSpeed(SPEED);
+    delay(200);
+
+    LeftMotor.forward();
+    RightMotor.backward();
+    LeftMotor.setSpeed(SPEED-10);
+    RightMotor.setSpeed(SPEED-10);
+    
+    if(front<25){ 
+        while(front<25){
+            readSonar();
+            DisplayStatus();
+        } 
+    }
+
+    else{     
+    
+        while(left<25){
+          readSonar();
+          DisplayStatus();
+        }
+
+    }
+  
 }
 
 
