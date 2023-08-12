@@ -69,7 +69,9 @@ void loop() {
 
   else if (right > 20) {
     F = false, L = false, R = true;
-    goRight();
+    //goRight();
+    Right90();
+    GO(10);
   }
 
   else if (left>20 && right<20 && front<10) {
@@ -120,13 +122,33 @@ void goForward() {
   // }
 
   //# Method 2: Robot will take decision from both left and right wall distance
-  if(left<=3){
-    RightMotor.setSpeed(SPEED-20);
-    LeftMotor.setSpeed(SPEED+20);
-  }else if(right<=3){
-    RightMotor.setSpeed(SPEED+20);
-    LeftMotor.setSpeed(SPEED-20);  
-  }
+  // if(left<10){
+  //   if(left<=3){
+  //     RightMotor.setSpeed(SPEED-20);
+  //     LeftMotor.setSpeed(SPEED+20);
+  //   }else if(right<=3){
+  //     RightMotor.setSpeed(SPEED+20);
+  //     LeftMotor.setSpeed(SPEED-20);  
+  //   }
+  //   else{
+  //     LeftMotor.setSpeed(SPEED);
+  //     RightMotor.setSpeed(SPEED);
+  //   }
+  // }
+
+ // else{
+    if(right<=4){
+      RightMotor.setSpeed(SPEED);
+      LeftMotor.setSpeed(SPEED-10);
+    }else if(right>=7){
+      RightMotor.setSpeed(SPEED-20);
+      LeftMotor.setSpeed(SPEED);  
+    }
+    else{
+      LeftMotor.setSpeed(SPEED);
+      RightMotor.setSpeed(SPEED);
+    }
+  //}
   // else if(left<=5){
   //   RightMotor.setSpeed(SPEED-20);
   //   LeftMotor.setSpeed(SPEED+20);
@@ -134,10 +156,7 @@ void goForward() {
   //   RightMotor.setSpeed(SPEED+20);
   //   LeftMotor.setSpeed(SPEED-20);    
   // }
-  else{
-    LeftMotor.setSpeed(SPEED);
-    RightMotor.setSpeed(SPEED);
-  }
+
 }
 
 void goLeft() {
@@ -182,6 +201,7 @@ void goRight() {
 
     }
     RightMotor.forward();
+    delay(400);
 
   
 }
@@ -275,4 +295,38 @@ void displaySetup() {
 
 
 void Intro() {
+}
+
+void GO(int s){
+  int s1 = front;
+  int destination=s1-s;
+  while(front>destination){
+    readSonar();
+    DisplayStatus();
+    goForward();
+  }
+}
+
+void Right90(){
+  LeftMotor.forward();
+  RightMotor.backward();
+  RightMotor.setSpeed(SPEED);
+  LeftMotor.setSpeed(SPEED);
+  while(front<20){
+    readSonar();
+    DisplayStatus();
+  }
+  RightMotor.forward();
+}
+
+void Left90(){
+  LeftMotor.backward();
+  RightMotor.forward();
+  RightMotor.setSpeed(SPEED);
+  LeftMotor.setSpeed(SPEED);
+  while(front<20){
+    readSonar();
+    DisplayStatus();
+  }
+  RightMotor.forward();
 }
