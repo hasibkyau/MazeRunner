@@ -1,4 +1,4 @@
-# Maze Runner Version 1.2
+# Maze Runner Version 1.2: Compitable for the Midlle size Robot
 ###Circuit Desing & Simulation: https://wokwi.com/projects/372511514540912641
 
 ## Libraries:
