@@ -1,5 +1,5 @@
 /*
- * Program: MazeRunner_V1.3.ino
+ * Program: MazeRunner_V1.2.ino
  * 13/08/23 Hasibur Rahman
  * Hardware: ESP32 + L298N + OLED + 2 DC Motors
  */
@@ -18,12 +18,11 @@
 #define MAX_DISTANCE 400  // Maximum distance (in cm) to ping.
 
 int front, left, right;
-int LeftBlock=10, RightBlock = 10, FrontBlock = 15, Balanced = 5, TrackSize = 20;
-bool F = true, L = false, R = false;
 
 
-int enL = 13, in1 = 12, in2 = 14; // Left Motor connections
-int enR = 25, in3 = 27, in4 = 26; // Right Motor connections
+
+int enL = 13, in1 = 14, in2 = 15; // Left Motor connections
+int enR = 25, in3 = 26, in4 = 27; // Right Motor connections
 L298N LeftMotor(enL, in1, in2);
 L298N RightMotor(enR, in3, in4);
 
@@ -36,185 +35,170 @@ NewPing sonar[SONAR_NUM] = {     // Sensor object array.
   NewPing(5, 18, MAX_DISTANCE)   // Right Sensor: Each sensor's trigger pin, echo pin, and max distance to ping.
 };
 
-
-
-void SetDynamicValues(){
-    readSonar();
-    TrackSize = left+right;
-    LeftBlock = TrackSize/2;
-    RightBlock = TrackSize/2;
+// Function to initialize the OLED display
+void displaySetup() {
+  display.begin(SSD1306_SWITCHCAPVCC, 0x3C);  // initialize with the I2C addr 0x3C (for the 128x32)
+  display.setTextColor(WHITE);
 }
 
 
+void Intro() {
+}
+
+
+//Function for reding data from Sonar sensors
+void readSonar() {
+  front = sonar[0].ping_cm();  // Measure front distance
+  left = sonar[1].ping_cm();   // Measure left distance
+  right = sonar[2].ping_cm();  // Measure right distance
+}
+
+// Function to display text on the OLED screen at a specific position and size
+void displayText(int x, int y, int textSize, const char *displayText) {
+}
+
+
+//Pinsetup
+void pinSetup() {
+  pinMode(enL, OUTPUT);
+  pinMode(enR, OUTPUT);
+  pinMode(in1, OUTPUT);
+  pinMode(in2, OUTPUT);
+  pinMode(in3, OUTPUT);
+  pinMode(in4, OUTPUT);
+
+  // Turn off motors - Initial state
+  digitalWrite(in1, LOW);
+  digitalWrite(in2, LOW);
+  digitalWrite(in3, LOW);
+  digitalWrite(in4, LOW);
+}
+
+
+
+int TrackSize=10;
+int LeftBlock = 30, RightBlock = 30, FrontBlock = 5, Balanced = 5, UBlock = 20;
+bool F = true, L = false, R = false;
 //Setup periferal devices
 void setup() {
   Serial.begin(115200);  // Initialize the serial communication for debugging
- // displaySetup();        // Initialize the OLED display
+  displaySetup();        // Initialize the OLED display
   pinSetup(); // Set all the motor control pins to outputs
- // SetDynamicValues();
+  readSonar();
+  TrackSize = left+right;
+  LeftBlock=TrackSize/2;
+  RightBlock=LeftBlock;
+  delay(2000);
 }
+
+
 
 //Main Code
 void loop() {
-    RightMotor.setSpeed(100);
-    LeftMotor.setSpeed(100);
-    RightMotor.forward();
-    LeftMotor.forward(); 
-  // readSonar();
-  // DisplayStatus();
+  readSonar();
+  DisplayStatus();
+  //Right Turn
+  if (right >= 15) {
+    F = false, L = false, R = true;
+    goRight();
 
-  // //Right Turn
-  // if (right >= TrackSize*2) {
-  //   F = false, L = false, R = true;
-  //   GO(TrackSize/2);
-  //   STOP(500);
-  //   Right90();
-  //   STOP(300);
-  //   GO(TrackSize/2);
-  // }
-
-  //  if (right >= RightBlock*2) {
-  //   F = false, L = false, R = true;
-  //   GO(TrackSize/2);
-  //   STOP(500);
-  //   Right90();
-  //   STOP(300);
-  //   GO(TrackSize/2);
-  // }
-
-  
-  // else if (front >= TrackSize) {
-  //   F = true, L = false, R = false;
-  //   goForward();
-  // }
-
-  // else if (left>=LeftBlock*2) {
-  //   F = false, L = true, R = false;
-  //   GO(TrackSize/2);
-  //   STOP(500);
-  //   Left90();
-  //   STOP(500);
-  //   GO(TrackSize/2);
-  //   }
-
-  // else{
-  //   F = false, L = false, R = false;
-  //   uTurn();
-  // }
+  }
+  else if(front>15){
+    F = true, L = false, R = false;
+    goForward();
+  }
+  else if(left>=15){
+    F = false, L = true, R = false;
+    goLeft();
+  }
+  else{
+    F = false, L = false, R = false;
+    uTurn();
+  }
 }
 
 
 //Function for Going Forward
 void goForward() {
   RightMotor.forward();
-  LeftMotor.forward(); 
-  if(right<RightBlock/2){
-    RightMotor.setSpeed(SPEED+30);
-    LeftMotor.setSpeed(SPEED-10);
-  }else if(right<RightBlock){
-    RightMotor.setSpeed(SPEED+20);
-    LeftMotor.setSpeed(SPEED-10);
-  }else if(right==RightBlock){
-    RightMotor.setSpeed(SPEED);
-    LeftMotor.setSpeed(SPEED);  
-  }else if(right> RightBlock+(RightBlock/2)){
-    RightMotor.setSpeed(SPEED-10);
-    LeftMotor.setSpeed(SPEED+30);  
-  }else if(right>RightBlock){
-    RightMotor.setSpeed(SPEED-10);
-    LeftMotor.setSpeed(SPEED+20);  
-  }else{
-    LeftMotor.setSpeed(SPEED);
-    RightMotor.setSpeed(SPEED);
-  }
-}
-
-
-
-//Function for Moving Forward to a specific Location
-void GO(int dest){
-  
-  RightMotor.setSpeed(SPEED);
-  LeftMotor.setSpeed(SPEED);
-  RightMotor.forward();
   LeftMotor.forward();
-
-  int destination=front-dest;
-  if(destination > TrackSize/2)
-  while(front>destination && front>=TrackSize/2){
-      readSonar();
-      goForward();
-      DisplayStatus();
+  // RightMotor.setSpeed(SPEED);
+  // LeftMotor.setSpeed(SPEED);  
+    if(right > RightBlock){
+      LeftMotor.setSpeed(SPEED+TrackSize);
+      RightMotor.setSpeed(SPEED-TrackSize);
+    }else if(right == RightBlock){
+      LeftMotor.setSpeed(SPEED);
+      RightMotor.setSpeed(SPEED);
+    }else{
+      LeftMotor.setSpeed(SPEED-TrackSize);
+      RightMotor.setSpeed(SPEED+TrackSize);  
     }
 }
 
 
+void goRight(){
+    int tFront = front;
+    Straight();
+    while(front>tFront-2){
+        readSonar();
+        DisplayStatus();
+    }
+    
+    stop(500);
 
-//Function for taking Right Turn
-void Right90(){
-  LeftMotor.forward();
-  RightMotor.backward();
-  RightMotor.setSpeed(SPEED+10);
-  LeftMotor.setSpeed(SPEED);
-  while(front<TrackSize*2){
-    readSonar();
-    DisplayStatus();
-  }
-  RightMotor.forward();
+    RightMotor.stop();
+    LeftMotor.setSpeed(SPEED-20);
+    delay(500);
+
+    stop(500);
+
+    Straight();
+    delay(500);
 }
 
+void goLeft(){
+    int tFront = front;
+    Straight();
+    while(front>15){
+        readSonar();
+        DisplayStatus();
+    }
+    
+    stop(500);
 
-
-//Function for taking Left Turn
-void Left90(){
-  LeftMotor.backward();
-  RightMotor.forward();
-  RightMotor.setSpeed(SPEED+10);
-  LeftMotor.setSpeed(SPEED+20);
-  while(front<TrackSize*2){
-    readSonar();
-    DisplayStatus();
-  }
-  RightMotor.forward();
-}
-
-
-
-//Function for taking U Turn
-void uTurn() {
-  RightMotor.stop();
-  LeftMotor.stop();
-  delay(500);
-  LeftMotor.setSpeed(SPEED);
-  RightMotor.setSpeed(SPEED);
-  if (right > left) {
-    RightMotor.backward();
-    LeftMotor.forward();
-  } else if (left > right) {
-    RightMotor.forward();
     LeftMotor.backward();
-  }
-  while (front < TrackSize) {
-    readSonar();
-    DisplayStatus();
-    printSomeInfo();
-  }
-  RightMotor.stop();
-  LeftMotor.stop();
-  delay(500);
-  RightMotor.forward();
+    RightMotor.forward();
+    LeftMotor.setSpeed(SPEED-20);
+    RightMotor.setSpeed(SPEED-20);
+    delay(500);
+
+    stop(500);
+
+    Straight();
+    delay(500);
+}
+
+void uTurn(){
+    LeftMotor.forward();
+    RightMotor.backward();
+    LeftMotor.setSpeed(SPEED-30);
+    RightMotor.setSpeed(SPEED-30);
+}
+
+void Straight(){
   LeftMotor.forward();
+  RightMotor.forward();
   LeftMotor.setSpeed(SPEED);
   RightMotor.setSpeed(SPEED);
 }
 
-
-
-//Function for stoping car for a certime period
-void STOP(int t){
-  RightMotor.stop();
+void stop(int t){
   LeftMotor.stop();
+  RightMotor.stop();
   delay(t);
+  LeftMotor.forward();
+  RightMotor.forward();
 }
 
 
@@ -259,47 +243,6 @@ void DisplayStatus() {
 void printSomeInfo() {
   Serial.print("Motor is moving = ");
   Serial.print(LeftMotor.isMoving());
-  Serial.print(" at speed = ");
+  Serial.print(" at setSpeed = ");
   Serial.println(LeftMotor.getSpeed());
-}
-
-
-
-// Function to initialize the OLED display
-void displaySetup() {
-  display.begin(SSD1306_SWITCHCAPVCC, 0x3C);  // initialize with the I2C addr 0x3C (for the 128x32)
-  display.setTextColor(WHITE);
-}
-
-
-void Intro() {
-}
-
-
-//Function for reding data from Sonar sensors
-void readSonar() {
-  front = sonar[0].ping_cm();  // Measure front distance
-  left = sonar[1].ping_cm();   // Measure left distance
-  right = sonar[2].ping_cm();  // Measure right distance
-}
-
-// Function to display text on the OLED screen at a specific position and size
-void displayText(int x, int y, int textSize, const char *displayText) {
-}
-
-
-//Pinsetup
-void pinSetup() {
-  pinMode(enL, OUTPUT);
-  pinMode(enR, OUTPUT);
-  pinMode(in1, OUTPUT);
-  pinMode(in2, OUTPUT);
-  pinMode(in3, OUTPUT);
-  pinMode(in4, OUTPUT);
-
-  // Turn off motors - Initial state
-  digitalWrite(in1, LOW);
-  digitalWrite(in2, LOW);
-  digitalWrite(in3, LOW);
-  digitalWrite(in4, LOW);
 }
