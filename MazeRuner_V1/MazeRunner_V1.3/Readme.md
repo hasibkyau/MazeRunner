@@ -1,4 +1,4 @@
-# Maze Runner Version 1.2: Compitable for the Midlle size Robot
+# Maze Runner Version 1.3: Compitable for the Midlle size Robot
 ###Circuit Desing & Simulation: https://wokwi.com/projects/372511514540912641
 
 ## Libraries:
@@ -8,8 +8,7 @@
 ### 4. Adafruit SSD1309: OLED display
 
 ## Major Changes:
-### 1. In this version the pinout for motor driver has been updated
-### 2. Functions for motor control has been modified
+### 1. Dynamic Variables
 
 ## Motor Driver Pinmap:
 ### EN1 = 13

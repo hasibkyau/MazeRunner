@@ -1,5 +1,5 @@
 /*
- * Program: MazeRunner_V1.2.ino
+ * Program: MazeRunner_V1.3.ino
  * 13/08/23 Hasibur Rahman
  * Hardware: ESP32 + L298N + OLED + 2 DC Motors
  */
@@ -18,7 +18,7 @@
 #define MAX_DISTANCE 400  // Maximum distance (in cm) to ping.
 
 int front, left, right;
-int LeftBlock = 30, RightBlock = 30, FrontBlock = 5, Balanced = 5, UBlock = 20;
+int LeftBlock=10, RightBlock = 10, FrontBlock = 15, Balanced = 5, TrackSize = 20;
 bool F = true, L = false, R = false;
 
 
@@ -38,17 +38,21 @@ NewPing sonar[SONAR_NUM] = {     // Sensor object array.
 
 
 
+void SetDynamicValues(){
+    readSonar();
+    TrackSize = left+right;
+    LeftBlock = TrackSize/2;
+    RightBlock = TrackSize/2;
+}
+
+
 //Setup periferal devices
 void setup() {
   Serial.begin(115200);  // Initialize the serial communication for debugging
   displaySetup();        // Initialize the OLED display
   pinSetup(); // Set all the motor control pins to outputs
-  // Set initial speed
-  // LeftMotor.setSpeed(SPEED);
-  // RightMotor.setSpeed(SPEED);
+  SetDynamicValues();
 }
-
-
 
 //Main Code
 void loop() {
@@ -56,54 +60,37 @@ void loop() {
   DisplayStatus();
 
   //Right Turn
-  if (right >= 25) {
+  if (right >= TrackSize*2) {
     F = false, L = false, R = true;
-    //goRight();
-    if(front>=20){
-      GO(10);
-    }
-    else{
-      GO(5);
-    }
+    GO(TrackSize/2);
     STOP(500);
     Right90();
     STOP(300);
-    GO(10);
+    GO(TrackSize/2);
   }
 
-   if (right >= 20) {
+   if (right >= RightBlock*2) {
     F = false, L = false, R = true;
-    //goRight();
-    if(front>=20){
-      GO(10);
-    }
-    else{
-      GO(5);
-    }
+    GO(TrackSize/2);
     STOP(500);
     Right90();
     STOP(300);
-    GO(10);
+    GO(TrackSize/2);
   }
 
   
-  else if (front >= 15) {
+  else if (front >= TrackSize) {
     F = true, L = false, R = false;
     goForward();
   }
 
-  else if (left>=20) {
+  else if (left>=LeftBlock*2) {
     F = false, L = true, R = false;
-    if(front>20){
-      GO(10);
-    }
-    else{
-      GO(5);
-    }
+    GO(TrackSize/2);
     STOP(500);
     Left90();
     STOP(500);
-    GO(10);
+    GO(TrackSize/2);
     }
 
   else{
@@ -116,46 +103,45 @@ void loop() {
 //Function for Going Forward
 void goForward() {
   RightMotor.forward();
-  LeftMotor.forward();
-  RightMotor.setSpeed(SPEED);
-  LeftMotor.setSpeed(SPEED);  
-    if(right<=4){
-      RightMotor.setSpeed(SPEED+30);
-      LeftMotor.setSpeed(SPEED-10);
-    }else if(right>4 && right<=5){
-      RightMotor.setSpeed(SPEED+20);
-      LeftMotor.setSpeed(SPEED-10);
-    }else if(right>5 && right<=7){
-      RightMotor.setSpeed(SPEED);
-      LeftMotor.setSpeed(SPEED);  
-    }else if(right>7 && right<=10){
-      RightMotor.setSpeed(SPEED-10);
-      LeftMotor.setSpeed(SPEED+20);  
-    }else if(right>10){
-      RightMotor.setSpeed(SPEED-10);
-      LeftMotor.setSpeed(SPEED+30);  
-    }else{
-      LeftMotor.setSpeed(SPEED);
-      RightMotor.setSpeed(SPEED);
-    }
+  LeftMotor.forward(); 
+  if(right<RightBlock/2){
+    RightMotor.setSpeed(SPEED+30);
+    LeftMotor.setSpeed(SPEED-10);
+  }else if(right<RightBlock){
+    RightMotor.setSpeed(SPEED+20);
+    LeftMotor.setSpeed(SPEED-10);
+  }else if(right==RightBlock){
+    RightMotor.setSpeed(SPEED);
+    LeftMotor.setSpeed(SPEED);  
+  }else if(right> RightBlock+(RightBlock/2)){
+    RightMotor.setSpeed(SPEED-10);
+    LeftMotor.setSpeed(SPEED+30);  
+  }else if(right>RightBlock){
+    RightMotor.setSpeed(SPEED-10);
+    LeftMotor.setSpeed(SPEED+20);  
+  }else{
+    LeftMotor.setSpeed(SPEED);
+    RightMotor.setSpeed(SPEED);
+  }
 }
 
 
 
 //Function for Moving Forward to a specific Location
-void GO(int s){
+void GO(int dest){
+  
   RightMotor.setSpeed(SPEED);
   LeftMotor.setSpeed(SPEED);
   RightMotor.forward();
   LeftMotor.forward();
-  int s1 = front;
-  int destination=s1-s;
-  if(destination >= 10 && front>destination){
-    while(front>destination){
+
+  int destination=front-dest;
+  if(destination > TrackSize/2)
+  while(front>destination && front>=TrackSize/2){
       readSonar();
+      goForward();
       DisplayStatus();
     }
-  }
 }
 
 
@@ -166,7 +152,7 @@ void Right90(){
   RightMotor.backward();
   RightMotor.setSpeed(SPEED+10);
   LeftMotor.setSpeed(SPEED);
-  while(front<20){
+  while(front<TrackSize*2){
     readSonar();
     DisplayStatus();
   }
@@ -181,7 +167,7 @@ void Left90(){
   RightMotor.forward();
   RightMotor.setSpeed(SPEED+10);
   LeftMotor.setSpeed(SPEED+20);
-  while(front<20){
+  while(front<TrackSize*2){
     readSonar();
     DisplayStatus();
   }
@@ -204,7 +190,7 @@ void uTurn() {
     RightMotor.forward();
     LeftMotor.backward();
   }
-  while (front < 25) {
+  while (front < TrackSize) {
     readSonar();
     DisplayStatus();
     printSomeInfo();
